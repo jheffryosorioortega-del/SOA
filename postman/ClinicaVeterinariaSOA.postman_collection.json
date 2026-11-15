@@ -1,0 +1,480 @@
+{
+  "info": {
+    "_postman_id": "b6f2a2b0-1e3a-4f2a-9b2a-veterinaria-soa",
+    "name": "Clinica Veterinaria SOA",
+    "description": "Coleccion para probar los 3 microservicios (Autenticacion, Citas, Inventario) a traves del API Gateway (puerto 8000). Ejecuta primero 'Login' dentro de la carpeta Autenticacion: guarda el token automaticamente y el resto de requests lo usan solos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Autenticacion",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('token', jsonData.token);",
+                  "    if (pm.environment.name) { pm.environment.set('token', jsonData.token); }",
+                  "    console.log('Token guardado:', jsonData.token);",
+                  "}",
+                  "pm.test('Login responde 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"recepcion1\",\n  \"password\": \"Vet12345\",\n  \"canal\": \"RECEPCION\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Usuarios de prueba (misma password Vet12345 para todos): recepcion1 (RECEPCIONISTA), vet.gomez (VETERINARIO), jperez (PROPIETARIO), caja1 (INVENTARIO_CAJA)."
+          }
+        },
+        {
+          "name": "Login con cuenta ya bloqueada (jperez) -> 423",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"jperez\",\n  \"password\": \"Vet12345\",\n  \"canal\": \"PROPIETARIO\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "La cuenta jperez ya viene BLOQUEADA desde el seed (3 intentos fallidos precargados), por eso responde 423 Locked aunque la contrasena sea correcta."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Citas",
+      "item": [
+        {
+          "name": "Listar citas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/citas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "citas"]
+            }
+          }
+        },
+        {
+          "name": "Obtener cita por id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/citas/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "citas", "1"]
+            }
+          }
+        },
+        {
+          "name": "Historial de estados de una cita",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/citas/1/historial",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "citas", "1", "historial"]
+            }
+          }
+        },
+        {
+          "name": "Crear cita",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mascotaId\": 1,\n  \"propietarioId\": 1,\n  \"veterinarioId\": 1,\n  \"fechaCita\": \"2026-10-15\",\n  \"horaInicio\": \"11:00:00\",\n  \"horaFin\": \"11:30:00\",\n  \"motivo\": \"Control anual\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/citas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "citas"]
+            },
+            "description": "Si el veterinario ya tiene otra cita activa que se solapa en fecha/hora, responde 409 Conflict (trigger fn_validar_solapamiento_cita)."
+          }
+        },
+        {
+          "name": "Cambiar estado de una cita",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CONFIRMADA\",\n  \"observacion\": \"Confirmada por telefono\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/citas/1/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "citas", "1", "estado"]
+            },
+            "description": "Valores validos de estado: PROGRAMADA, CONFIRMADA, REPROGRAMADA, CANCELADA, ATENDIDA, NO_ASISTIO."
+          }
+        },
+        {
+          "name": "Listar mascotas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/mascotas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mascotas"]
+            }
+          }
+        },
+        {
+          "name": "Crear mascota",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"propietario\": { \"id\": 1 },\n  \"especie\": { \"id\": 1 },\n  \"raza\": { \"id\": 1 },\n  \"nombre\": \"Michi\",\n  \"sexo\": \"H\",\n  \"fechaNacimiento\": \"2023-02-20\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/mascotas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "mascotas"]
+            },
+            "description": "sexo: 'M' (macho) o 'H' (hembra)."
+          }
+        },
+        {
+          "name": "Listar propietarios",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/propietarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "propietarios"]
+            }
+          }
+        },
+        {
+          "name": "Crear propietario",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Mario\",\n  \"apellidos\": \"Salazar\",\n  \"numeroDocumento\": \"70011223\",\n  \"telefono\": \"999888777\",\n  \"correo\": \"mario@mail.com\",\n  \"direccion\": \"Av. Siempre Viva 123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/propietarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "propietarios"]
+            }
+          }
+        },
+        {
+          "name": "Listar veterinarios",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/veterinarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "veterinarios"]
+            }
+          }
+        },
+        {
+          "name": "Horarios de un veterinario",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/veterinarios/1/horarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "veterinarios", "1", "horarios"]
+            }
+          }
+        },
+        {
+          "name": "Catalogo: especies",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/especies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "especies"]
+            }
+          }
+        },
+        {
+          "name": "Catalogo: razas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/razas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "razas"]
+            }
+          }
+        },
+        {
+          "name": "Catalogo: estados de cita",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/estados-cita",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "estados-cita"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventario",
+      "item": [
+        {
+          "name": "Listar productos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/productos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "productos"]
+            }
+          }
+        },
+        {
+          "name": "Crear producto",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"VAC-010\",\n  \"nombre\": \"Vacuna Antirrabica\",\n  \"categoria\": { \"id\": 2 },\n  \"unidadMedida\": { \"id\": 1 },\n  \"precioUnitario\": 25.00,\n  \"stockMinimo\": 5\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/productos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "productos"]
+            },
+            "description": "categoria.id: 1=Medicamento, 2=Vacuna, 3=Alimento, 4=Insumo (ver Catalogo: categorias de producto). stockActual siempre inicia en 0; se ajusta solo mediante movimientos."
+          }
+        },
+        {
+          "name": "Listar movimientos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movimientos"]
+            }
+          }
+        },
+        {
+          "name": "Movimientos de un producto",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos/producto/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movimientos", "producto", "1"]
+            }
+          }
+        },
+        {
+          "name": "Registrar movimiento (entrada por compra)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": 1,\n  \"tipoMovimiento\": \"ENTRADA_COMPRA\",\n  \"cantidad\": 20,\n  \"observacion\": \"Reposicion de stock\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movimientos"]
+            }
+          }
+        },
+        {
+          "name": "Registrar movimiento (salida por consumo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": 1,\n  \"tipoMovimiento\": \"SALIDA_CONSUMO\",\n  \"cantidad\": 3,\n  \"citaId\": 1,\n  \"observacion\": \"Consumo durante atencion\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/movimientos",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movimientos"]
+            },
+            "description": "Si la cantidad deja el stock en negativo, responde 409 Conflict (trigger fn_aplicar_movimiento). Si el stock resultante cae bajo el minimo, se genera una alerta automatica (ver 'Listar alertas pendientes')."
+          }
+        },
+        {
+          "name": "Listar alertas pendientes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/alertas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alertas"]
+            }
+          }
+        },
+        {
+          "name": "Atender alerta",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/api/alertas/1/atender",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alertas", "1", "atender"]
+            }
+          }
+        },
+        {
+          "name": "Catalogo: categorias de producto",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias-producto",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categorias-producto"]
+            }
+          }
+        },
+        {
+          "name": "Catalogo: unidades de medida",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/unidades-medida",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "unidades-medida"]
+            }
+          }
+        },
+        {
+          "name": "Catalogo: tipos de movimiento",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/tipos-movimiento",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tipos-movimiento"]
+            }
+          }
+        },
+        {
+          "name": "Catalogo: proveedores",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/proveedores",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "proveedores"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Demo bloqueo de cuenta (ejecutar MANUALMENTE, no en Collection Runner)",
+      "item": [
+        {
+          "name": "Login con password incorrecta (vet.gomez) - repetir 3 veces para bloquear",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"vet.gomez\",\n  \"password\": \"password_incorrecto\",\n  \"canal\": \"VETERINARIO\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Envia esta peticion 3 veces: responde 401 las 3 veces, y desde el 4to intento responde 423 Locked (la cuenta queda bloqueada por el trigger de la base de datos). Para desbloquearla: docker exec vet-db-autenticacion psql -U postgres -d autenticacion -c \"UPDATE usuarios SET estado='ACTIVO', intentos_fallidos=0 WHERE username='vet.gomez';\""
+          }
+        }
+      ]
+    }
+  ]
+}

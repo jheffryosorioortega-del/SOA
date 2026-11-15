@@ -1,0 +1,19 @@
+# Otro proyecto que esta en la misma carpeta y no forma parte de este trabajo
+sgp-microservicios/
+
+# Archivos del editor / IDE
+.idea/
+.vscode/
+*.iml
+
+# Compilacion y dependencias
+target/
+node_modules/
+*.class
+*.jar
+
+# Variables de entorno locales y archivos temporales
+.env
+*.log
+*.tmp
+~$*

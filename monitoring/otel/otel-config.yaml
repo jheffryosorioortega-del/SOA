@@ -1,0 +1,30 @@
+file_format: "1.0-rc.1"
+
+# Nombre del servicio: se toma de la variable OTEL_SERVICE_NAME de cada contenedor
+resource:
+  attributes:
+    - name: service.name
+      value: ${OTEL_SERVICE_NAME}
+
+propagator:
+  composite:
+    - tracecontext:
+    - baggage:
+
+# Solo se exportan trazas (las metricas ya las recolecta Prometheus).
+tracer_provider:
+  processors:
+    - batch:
+        exporter:
+          otlp_http:
+            endpoint: http://jaeger-opente:4318/v1/traces
+  sampler:
+    # Descarta las trazas de /actuator (Prometheus consulta cada 5 s y taparia las peticiones reales)
+    rule_based_routing:
+      fallback_sampler:
+        always_on:
+      span_kind: SERVER
+      rules:
+        - action: DROP
+          attribute: url.path
+          pattern: /actuator.*

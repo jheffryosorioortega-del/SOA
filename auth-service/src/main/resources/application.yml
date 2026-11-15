@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/autenticacion
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+jwt:
+  secret: ${JWT_SECRET:CambiaEstaClaveSecretaCompartidaPorUnaMuyLargaYSegura2026}
+  expiration-ms: 3600000
+
+# Password de demo para todos los usuarios sembrados en 02_seed.sql.
+# Al arrancar, si detecta hashes de marcador de posicion, los reemplaza por
+# un hash BCrypt real de esta contraseña (ver SeedPasswordInitializer).
+seed:
+  default-password: ${SEED_PASSWORD:Vet12345}

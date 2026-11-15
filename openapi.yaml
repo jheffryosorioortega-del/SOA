@@ -1,0 +1,176 @@
+openapi: 3.0.3
+info:
+  title: Clínica Veterinaria - Servicios SOA
+  version: 1.0.0
+  description: Servicios de Autenticación, Citas e Inventario (acceso vía API Gateway)
+servers:
+  - url: http://localhost:8000
+    description: API Gateway
+security:
+  - bearerAuth: []
+paths:
+  /api/auth/login:
+    post:
+      tags: [Autenticación]
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login correcto, devuelve el token JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Usuario o contraseña incorrectos
+        '423':
+          description: Cuenta bloqueada (3 intentos fallidos)
+  /api/auth/logout:
+    post:
+      tags: [Autenticación]
+      summary: Cerrar sesión
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Sesión cerrada
+  /api/citas:
+    get:
+      tags: [Citas]
+      summary: Listar citas
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de citas
+    post:
+      tags: [Citas]
+      summary: Programar una cita
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CitaRequest'
+      responses:
+        '201':
+          description: Cita creada en estado PROGRAMADA
+        '401':
+          description: Token ausente o inválido
+        '409':
+          description: El veterinario ya tiene una cita en ese horario
+  /api/citas/{id}/estado:
+    patch:
+      tags: [Citas]
+      summary: Cambiar el estado de una cita
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CambiarEstadoRequest'
+      responses:
+        '200':
+          description: Cita actualizada
+  /api/productos:
+    get:
+      tags: [Inventario]
+      summary: Listar productos con su stock actual
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de productos
+  /api/movimientos:
+    post:
+      tags: [Inventario]
+      summary: Registrar una entrada o salida de stock
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovimientoRequest'
+      responses:
+        '201':
+          description: Movimiento registrado, stock actualizado
+        '409':
+          description: Stock insuficiente
+  /api/alertas:
+    get:
+      tags: [Inventario]
+      summary: Listar alertas de stock bajo pendientes
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Alertas pendientes
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password, canal]
+      properties:
+        username: { type: string, example: recepcion1 }
+        password: { type: string, example: Vet12345 }
+        canal:
+          type: string
+          enum: [RECEPCION, VETERINARIO, PROPIETARIO, INVENTARIO_CAJA]
+    LoginResponse:
+      type: object
+      properties:
+        token: { type: string }
+        usuarioId: { type: integer }
+        username: { type: string }
+        rol: { type: string, example: RECEPCIONISTA }
+    CitaRequest:
+      type: object
+      required: [mascotaId, propietarioId, veterinarioId, fechaCita, horaInicio, horaFin, motivo]
+      properties:
+        mascotaId: { type: integer, example: 1 }
+        propietarioId: { type: integer, example: 1 }
+        veterinarioId: { type: integer, example: 1 }
+        fechaCita: { type: string, format: date, example: '2026-10-15' }
+        horaInicio: { type: string, example: '11:00:00' }
+        horaFin: { type: string, example: '11:30:00' }
+        motivo: { type: string, example: Control anual }
+    CambiarEstadoRequest:
+      type: object
+      required: [estado]
+      properties:
+        estado:
+          type: string
+          enum: [PROGRAMADA, CONFIRMADA, REPROGRAMADA, CANCELADA, ATENDIDA, NO_ASISTIO]
+        observacion: { type: string }
+    MovimientoRequest:
+      type: object
+      required: [productoId, tipoMovimiento, cantidad]
+      properties:
+        productoId: { type: integer, example: 1 }
+        tipoMovimiento:
+          type: string
+          enum: [ENTRADA_COMPRA, SALIDA_CONSUMO, AJUSTE, DEVOLUCION]
+        cantidad: { type: number, example: 3 }
+        citaId: { type: integer, description: Cita donde se consumió el producto }
+        observacion: { type: string }

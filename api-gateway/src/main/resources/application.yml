@@ -1,0 +1,72 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://auth-service:8080
+          predicates:
+            - Path=/api/auth/**
+
+        - id: citas-service
+          uri: http://citas-service:8080
+          predicates:
+            - Path=/api/citas/**,/api/mascotas/**,/api/propietarios/**,/api/veterinarios/**,/api/especies/**,/api/razas/**,/api/estados-cita/**
+
+        - id: inventario-service
+          uri: http://inventario-service:8080
+          predicates:
+            - Path=/api/productos/**,/api/movimientos/**,/api/alertas/**,/api/categorias-producto/**,/api/unidades-medida/**,/api/tipos-movimiento/**,/api/proveedores/**
+
+        # Documentacion OpenAPI de cada servicio, expuesta por el gateway para la pantalla unica de Swagger.
+        # (Se usa /api-docs/... y no /v3/api-docs/... para no chocar con las rutas propias de springdoc.)
+        - id: docs-auth
+          uri: http://auth-service:8080
+          predicates:
+            - Path=/api-docs/auth
+          filters:
+            - RewritePath=/api-docs/auth, /v3/api-docs
+
+        - id: docs-citas
+          uri: http://citas-service:8080
+          predicates:
+            - Path=/api-docs/citas
+          filters:
+            - RewritePath=/api-docs/citas, /v3/api-docs
+
+        - id: docs-inventario
+          uri: http://inventario-service:8080
+          predicates:
+            - Path=/api-docs/inventario
+          filters:
+            - RewritePath=/api-docs/inventario, /v3/api-docs
+
+# Pantalla unica de Swagger con un menu desplegable para cambiar de servicio
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: 1. Autenticación
+        url: /api-docs/auth
+      - name: 2. Citas
+        url: /api-docs/citas
+      - name: 3. Inventario
+        url: /api-docs/inventario
+    urls-primary-name: 1. Autenticación
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO

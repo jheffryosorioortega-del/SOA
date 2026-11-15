@@ -1,0 +1,26 @@
+pg_citas_por_estado:
+  query: "SELECT e.nombre AS estado, COUNT(c.id) AS total FROM estados_cita e LEFT JOIN citas c ON c.estado_id = e.id GROUP BY e.nombre"
+  master: true
+  metrics:
+    - estado:
+        usage: "LABEL"
+        description: "Estado de la cita"
+    - total:
+        usage: "GAUGE"
+        description: "Citas en ese estado"
+
+pg_citas_hoy:
+  query: "SELECT COUNT(*) AS total FROM citas WHERE fecha_cita = CURRENT_DATE"
+  master: true
+  metrics:
+    - total:
+        usage: "GAUGE"
+        description: "Citas programadas para hoy"
+
+pg_mascotas_registradas:
+  query: "SELECT COUNT(*) AS total FROM mascotas WHERE activo"
+  master: true
+  metrics:
+    - total:
+        usage: "GAUGE"
+        description: "Mascotas activas registradas"

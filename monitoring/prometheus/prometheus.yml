@@ -1,0 +1,38 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  # Servicios Spring Boot: exponen /actuator/prometheus en el puerto interno 8080
+  - job_name: auth-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['auth-service:8080']
+
+  - job_name: citas-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['citas-service:8080']
+
+  - job_name: inventario-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['inventario-service:8080']
+
+  - job_name: api-gateway
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['api-gateway:8080']
+
+  # Una instancia de postgres_exporter por base de datos
+  - job_name: pg-autenticacion
+    static_configs:
+      - targets: ['pg-exporter-autenticacion:9187']
+
+  - job_name: pg-citas
+    static_configs:
+      - targets: ['pg-exporter-citas:9187']
+
+  - job_name: pg-inventario
+    static_configs:
+      - targets: ['pg-exporter-inventario:9187']

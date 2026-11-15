@@ -1,0 +1,251 @@
+services:
+  # ---------------------------------------------------------------------
+  # Capa de datos: una base de datos PostgreSQL independiente por servicio
+  # ---------------------------------------------------------------------
+  db-autenticacion:
+    image: postgres:16-alpine
+    container_name: vet-db-autenticacion
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: autenticacion
+    ports:
+      - "5433:5432"
+    volumes:
+      - autenticacion_data:/var/lib/postgresql/data
+      - ./db-autenticacion:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db-citas:
+    image: postgres:16-alpine
+    container_name: vet-db-citas
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: citas
+    ports:
+      - "5434:5432"
+    volumes:
+      - citas_data:/var/lib/postgresql/data
+      - ./db-citas:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db-inventario:
+    image: postgres:16-alpine
+    container_name: vet-db-inventario
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inventario
+    ports:
+      - "5435:5432"
+    volumes:
+      - inventario_data:/var/lib/postgresql/data
+      - ./db-inventario:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer
+    container_name: vet-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+
+  # ---------------------------------------------------------------------
+  # Capa de servicios de negocio: un microservicio Spring Boot por proceso,
+  # cada uno conectado SOLO a su propia base de datos.
+  # ---------------------------------------------------------------------
+  auth-service:
+    build: ./auth-service
+    container_name: vet-auth-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: db-autenticacion
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: CambiaEstaClaveSecretaCompartidaPorUnaMuyLargaYSegura2026
+      SEED_PASSWORD: Vet12345
+      OTEL_SERVICE_NAME: auth-service
+      OTEL_EXPERIMENTAL_CONFIG_FILE: /otel/otel-config.yaml
+      OTEL_CONFIG_FILE: /otel/otel-config.yaml
+    volumes:
+      - ./monitoring/otel/otel-config.yaml:/otel/otel-config.yaml:ro
+    ports:
+      - "8081:8080"
+    depends_on:
+      db-autenticacion:
+        condition: service_healthy
+
+  citas-service:
+    build: ./citas-service
+    container_name: vet-citas-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: db-citas
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: CambiaEstaClaveSecretaCompartidaPorUnaMuyLargaYSegura2026
+      OTEL_SERVICE_NAME: citas-service
+      OTEL_EXPERIMENTAL_CONFIG_FILE: /otel/otel-config.yaml
+      OTEL_CONFIG_FILE: /otel/otel-config.yaml
+    volumes:
+      - ./monitoring/otel/otel-config.yaml:/otel/otel-config.yaml:ro
+    ports:
+      - "8082:8080"
+    depends_on:
+      db-citas:
+        condition: service_healthy
+
+  inventario-service:
+    build: ./inventario-service
+    container_name: vet-inventario-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: db-inventario
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: CambiaEstaClaveSecretaCompartidaPorUnaMuyLargaYSegura2026
+      OTEL_SERVICE_NAME: inventario-service
+      OTEL_EXPERIMENTAL_CONFIG_FILE: /otel/otel-config.yaml
+      OTEL_CONFIG_FILE: /otel/otel-config.yaml
+    volumes:
+      - ./monitoring/otel/otel-config.yaml:/otel/otel-config.yaml:ro
+    ports:
+      - "8083:8080"
+    depends_on:
+      db-inventario:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------
+  # API Gateway: puerta de entrada única para los 3 clientes (recepción,
+  # veterinario, propietario, inventario/caja), como en el mapa de
+  # arquitectura del documento.
+  # ---------------------------------------------------------------------
+  api-gateway:
+    build: ./api-gateway
+    container_name: vet-api-gateway
+    restart: unless-stopped
+    environment:
+      OTEL_SERVICE_NAME: api-gateway
+      OTEL_EXPERIMENTAL_CONFIG_FILE: /otel/otel-config.yaml
+      OTEL_CONFIG_FILE: /otel/otel-config.yaml
+    volumes:
+      - ./monitoring/otel/otel-config.yaml:/otel/otel-config.yaml:ro
+    ports:
+      - "8000:8080"
+    depends_on:
+      - auth-service
+      - citas-service
+      - inventario-service
+
+  # ---------------------------------------------------------------------
+  # Trazas distribuidas: los servicios Java llevan el agente de
+  # OpenTelemetry y envian sus trazas (OTLP/HTTP, puerto 4318) a Jaeger.
+  # Interfaz web: http://localhost:16686
+  # ---------------------------------------------------------------------
+  jaeger-opente:
+    image: jaegertracing/all-in-one:latest
+    container_name: Jaeger-OpenTe
+    restart: unless-stopped
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+
+  # ---------------------------------------------------------------------
+  # Monitoreo: Prometheus recolecta metricas, Grafana las muestra.
+  # Un postgres_exporter por base de datos (lee metricas de PostgreSQL y
+  # consultas de negocio definidas en monitoring/postgres-exporter).
+  # ---------------------------------------------------------------------
+  pg-exporter-autenticacion:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: vet-pg-exporter-autenticacion
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:postgres@db-autenticacion:5432/autenticacion?sslmode=disable"
+    command: ["--extend.query-path=/queries.yaml"]
+    volumes:
+      - ./monitoring/postgres-exporter/queries-autenticacion.yaml:/queries.yaml:ro
+    depends_on:
+      db-autenticacion:
+        condition: service_healthy
+
+  pg-exporter-citas:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: vet-pg-exporter-citas
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:postgres@db-citas:5432/citas?sslmode=disable"
+    command: ["--extend.query-path=/queries.yaml"]
+    volumes:
+      - ./monitoring/postgres-exporter/queries-citas.yaml:/queries.yaml:ro
+    depends_on:
+      db-citas:
+        condition: service_healthy
+
+  pg-exporter-inventario:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: vet-pg-exporter-inventario
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:postgres@db-inventario:5432/inventario?sslmode=disable"
+    command: ["--extend.query-path=/queries.yaml"]
+    volumes:
+      - ./monitoring/postgres-exporter/queries-inventario.yaml:/queries.yaml:ro
+    depends_on:
+      db-inventario:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: vet-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - auth-service
+      - citas-service
+      - inventario-service
+      - api-gateway
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: vet-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/clinica-veterinaria.json
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  autenticacion_data:
+  citas_data:
+  inventario_data:
+  prometheus_data:
+  grafana_data:

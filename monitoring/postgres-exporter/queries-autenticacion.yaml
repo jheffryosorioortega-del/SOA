@@ -1,0 +1,29 @@
+pg_usuarios:
+  query: "SELECT estado, COUNT(*) AS total FROM usuarios GROUP BY estado"
+  master: true
+  metrics:
+    - estado:
+        usage: "LABEL"
+        description: "Estado de la cuenta (ACTIVO, BLOQUEADO, INACTIVO)"
+    - total:
+        usage: "GAUGE"
+        description: "Usuarios en ese estado"
+
+pg_log_accesos:
+  query: "SELECT tipo_evento, COUNT(*) AS total FROM log_accesos GROUP BY tipo_evento"
+  master: true
+  metrics:
+    - tipo_evento:
+        usage: "LABEL"
+        description: "Tipo de evento de acceso"
+    - total:
+        usage: "GAUGE"
+        description: "Eventos registrados (LOGIN_EXITOSO, LOGIN_FALLIDO, BLOQUEO, LOGOUT)"
+
+pg_notificaciones:
+  query: "SELECT COUNT(*) AS total FROM notificaciones WHERE leida = FALSE"
+  master: true
+  metrics:
+    - total:
+        usage: "GAUGE"
+        description: "Notificaciones sin leer"

@@ -1,0 +1,43 @@
+pg_alertas_pendientes:
+  query: "SELECT COUNT(*) AS total FROM alertas_stock WHERE estado = 'PENDIENTE'"
+  master: true
+  metrics:
+    - total:
+        usage: "GAUGE"
+        description: "Alertas de stock bajo pendientes de atender"
+
+pg_productos_bajo_minimo:
+  query: "SELECT COUNT(*) AS total FROM productos WHERE stock_actual < stock_minimo"
+  master: true
+  metrics:
+    - total:
+        usage: "GAUGE"
+        description: "Productos con stock por debajo del minimo"
+
+pg_stock_producto:
+  query: "SELECT codigo, nombre, stock_actual::float8 AS stock, stock_minimo::float8 AS minimo FROM productos"
+  master: true
+  metrics:
+    - codigo:
+        usage: "LABEL"
+        description: "Codigo del producto"
+    - nombre:
+        usage: "LABEL"
+        description: "Nombre del producto"
+    - stock:
+        usage: "GAUGE"
+        description: "Stock actual"
+    - minimo:
+        usage: "GAUGE"
+        description: "Stock minimo"
+
+pg_movimientos_por_tipo:
+  query: "SELECT t.nombre AS tipo, COUNT(m.id) AS total FROM tipos_movimiento t LEFT JOIN movimientos_inventario m ON m.tipo_movimiento_id = t.id GROUP BY t.nombre"
+  master: true
+  metrics:
+    - tipo:
+        usage: "LABEL"
+        description: "Tipo de movimiento"
+    - total:
+        usage: "GAUGE"
+        description: "Movimientos registrados"
