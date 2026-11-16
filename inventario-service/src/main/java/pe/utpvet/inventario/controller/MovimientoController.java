@@ -37,12 +37,13 @@ public class MovimientoController {
     }
 
     @Operation(summary = "Registrar una entrada o salida de stock",
-            description = "Actualiza el stock del producto. Responde 409 si la salida dejaría el stock negativo. Si el stock queda bajo el mínimo, se crea una alerta.")
+            description = "Actualiza el stock del producto. Si se envía citaId, Inventario consulta al servicio de Citas para comprobar que la cita existe (404 si no existe, 503 si Citas no responde). Responde 409 si la salida dejaría el stock negativo. Si el stock queda bajo el mínimo, se crea una alerta.")
     @PostMapping
     public ResponseEntity<MovimientoInventario> registrar(@Valid @RequestBody MovimientoRequest request,
                                                             HttpServletRequest http) {
         Integer usuarioId = (Integer) http.getAttribute("usuarioId");
-        MovimientoInventario creado = inventarioService.registrarMovimiento(request, usuarioId);
+        MovimientoInventario creado = inventarioService.registrarMovimiento(
+                request, usuarioId, http.getHeader("Authorization"));
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 }

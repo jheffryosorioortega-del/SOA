@@ -66,6 +66,12 @@ Check "Listar productos responde 200" ($r.Status -eq 200) "(status $($r.Status))
 $mov = (@{ productoId = 1; tipoMovimiento = "ENTRADA_COMPRA"; cantidad = 1; observacion = "Prueba automatica" } | ConvertTo-Json)
 $r = Llamar "POST" "$B/api/movimientos" $mov $token
 Check "Registrar entrada de stock responde 201" ($r.Status -eq 201) "(status $($r.Status))"
+$mov = (@{ productoId = 1; tipoMovimiento = "ENTRADA_COMPRA"; cantidad = 1; citaId = 1 } | ConvertTo-Json)
+$r = Llamar "POST" "$B/api/movimientos" $mov $token
+Check "Movimiento con citaId valido (Inventario consulta a Citas) responde 201" ($r.Status -eq 201) "(status $($r.Status))"
+$mov = (@{ productoId = 1; tipoMovimiento = "ENTRADA_COMPRA"; cantidad = 1; citaId = 999999 } | ConvertTo-Json)
+$r = Llamar "POST" "$B/api/movimientos" $mov $token
+Check "Movimiento con cita inexistente responde 404" ($r.Status -eq 404) "(status $($r.Status))"
 $mov = (@{ productoId = 1; tipoMovimiento = "SALIDA_CONSUMO"; cantidad = 999999 } | ConvertTo-Json)
 $r = Llamar "POST" "$B/api/movimientos" $mov $token
 Check "Salida mayor al stock responde 409" ($r.Status -eq 409) "(status $($r.Status))"
@@ -114,6 +120,22 @@ if ($Aislamiento) {
     Start-Sleep -Seconds 15
     $r = Llamar "GET" "$B/api/productos" $null $token
     Check "Inventario restaurado responde 200" ($r.Status -eq 200) "(status $($r.Status))"
+
+    Write-Host "`n=== 9. Dependencia entre servicios (Inventario -> Citas) ===" -ForegroundColor Cyan
+    docker stop vet-citas-service | Out-Null
+    Start-Sleep -Seconds 3
+    $mov = (@{ productoId = 1; tipoMovimiento = "ENTRADA_COMPRA"; cantidad = 1; citaId = 1 } | ConvertTo-Json)
+    $r = Llamar "POST" "$B/api/movimientos" $mov $token
+    Check "Citas apagado: movimiento CON citaId responde 503 (no se puede validar)" ($r.Status -eq 503) "(status $($r.Status))"
+    $mov = (@{ productoId = 1; tipoMovimiento = "ENTRADA_COMPRA"; cantidad = 1 } | ConvertTo-Json)
+    $r = Llamar "POST" "$B/api/movimientos" $mov $token
+    Check "Citas apagado: movimiento SIN citaId sigue funcionando (201)" ($r.Status -eq 201) "(status $($r.Status))"
+    docker start vet-citas-service | Out-Null
+    Start-Sleep -Seconds 25
+    docker restart vet-api-gateway | Out-Null
+    Start-Sleep -Seconds 15
+    $r = Llamar "GET" "$B/api/citas" $null $token
+    Check "Citas restaurado responde 200" ($r.Status -eq 200) "(status $($r.Status))"
 }
 
 Write-Host "`n=== RESULTADO: $ok correctas, $fail con fallo ===" -ForegroundColor $(if ($fail -eq 0) { "Green" } else { "Red" })

@@ -6,6 +6,10 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      # Cabeceras de seguridad en todas las respuestas de la API (hallazgos del escaneo OWASP ZAP)
+      default-filters:
+        - AddResponseHeader=X-Content-Type-Options, nosniff
+        - AddResponseHeader=Cross-Origin-Resource-Policy, same-origin
       routes:
         - id: auth-service
           uri: http://auth-service:8080

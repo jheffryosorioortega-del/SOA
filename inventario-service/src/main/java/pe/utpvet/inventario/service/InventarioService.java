@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.utpvet.inventario.client.CitasClient;
 import pe.utpvet.inventario.dto.MovimientoRequest;
 import pe.utpvet.inventario.model.MovimientoInventario;
 import pe.utpvet.inventario.model.Producto;
@@ -25,9 +26,17 @@ public class InventarioService {
     private final MovimientoInventarioRepository movimientoRepository;
     private final ProveedorRepository proveedorRepository;
     private final EntityManager entityManager;
+    private final CitasClient citasClient;
 
     @Transactional
-    public MovimientoInventario registrarMovimiento(MovimientoRequest request, Integer usuarioId) {
+    public MovimientoInventario registrarMovimiento(MovimientoRequest request, Integer usuarioId, String authorization) {
+        // Orquestación parcial: si el consumo se asocia a una cita, se valida contra el
+        // servicio de Citas (llamada REST) antes de tocar el stock. Se hace primero para
+        // no mantener una conexión a la base abierta mientras se espera la respuesta.
+        if (request.citaId() != null && !citasClient.existeCita(request.citaId(), authorization)) {
+            throw new NoSuchElementException("La cita " + request.citaId() + " no existe en el servicio de Citas");
+        }
+
         Producto producto = productoRepository.findById(request.productoId())
                 .orElseThrow(() -> new NoSuchElementException("Producto no encontrado: " + request.productoId()));
         TipoMovimiento tipo = tipoMovimientoRepository.findByNombre(request.tipoMovimiento())

@@ -220,7 +220,21 @@ Con el sistema levantado, desde la carpeta del proyecto:
 powershell -ExecutionPolicy Bypass -File .\probar-sistema.ps1
 ```
 
-Comprueba los 14 contenedores, el login (200, 401, 423 por bloqueo), citas (201 y 409 por solapamiento), inventario (201 y 409 por stock insuficiente), las especificaciones de Swagger, Prometheus (7 objetivos), Grafana y Jaeger. Con `-Aislamiento` apaga Inventario, comprueba que Citas y Autenticación siguen funcionando y lo vuelve a encender. Cada línea sale como `[OK]` o `[FALLO]`; al final muestra el total. Crea una cita y un movimiento de prueba y deja a `vet.gomez` desbloqueado.
+Comprueba los 14 contenedores, el login (200, 401, 423 por bloqueo), citas (201 y 409 por solapamiento), inventario (201 y 409 por stock insuficiente), la integración Inventario → Citas (201 con cita válida, 404 con cita inexistente), las especificaciones de Swagger, Prometheus (7 objetivos), Grafana y Jaeger. Con `-Aislamiento` apaga Inventario y comprueba que Citas y Autenticación siguen funcionando; luego apaga Citas y comprueba que Inventario devuelve 503 solo cuando el movimiento lleva `citaId`. Cada línea sale como `[OK]` o `[FALLO]`; al final muestra el total (42 verificaciones con `-Aislamiento`). Crea una cita y movimientos de prueba y deja a `vet.gomez` desbloqueado.
+
+## Integración entre servicios (orquestación parcial)
+
+El servicio de **Inventario invoca al servicio de Citas** por REST cuando un movimiento incluye `citaId`:
+
+1. El cliente envía `POST /api/movimientos` (con su token JWT) al gateway, que lo enruta a Inventario.
+2. Inventario llama a `GET /api/citas/{id}` en Citas (clase `CitasClient`), reenviando el mismo token. La dirección de Citas viene de la variable `CITAS_SERVICE_URL` (`http://citas-service:8080` en Docker); los tiempos límite son 2 s para conectar y 4 s para leer.
+3. Si la cita existe, el movimiento se registra (`201`). Si no existe, responde `404`. Si Citas no responde, responde `503` y no registra nada. Los movimientos **sin** `citaId` no dependen de Citas.
+
+La traza completa (gateway → Inventario → Citas) se ve en Jaeger.
+
+## Escaneo de vulnerabilidades con OWASP ZAP
+
+Los reportes del escaneo activo de las tres APIs (antes y después de las correcciones), el hook que envía el token y los comandos para repetirlo están en [`seguridad/`](seguridad). Resultado: el primer escaneo encontró 1 hallazgo medio y 7 bajos; tras validar las entradas del login y agregar las cabeceras `X-Content-Type-Options` y `Cross-Origin-Resource-Policy` en el gateway, el segundo escaneo no tuvo hallazgos medios, bajos ni altos. **El escaneo activo inserta datos y puede bloquear cuentas: respalda las bases antes de repetirlo.**
 
 ## Documentación interactiva con Swagger (OpenAPI)
 

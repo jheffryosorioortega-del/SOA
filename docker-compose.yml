@@ -120,6 +120,7 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres
       JWT_SECRET: CambiaEstaClaveSecretaCompartidaPorUnaMuyLargaYSegura2026
+      CITAS_SERVICE_URL: http://citas-service:8080
       OTEL_SERVICE_NAME: inventario-service
       OTEL_EXPERIMENTAL_CONFIG_FILE: /otel/otel-config.yaml
       OTEL_CONFIG_FILE: /otel/otel-config.yaml

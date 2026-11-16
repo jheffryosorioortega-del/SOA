@@ -1,0 +1,797 @@
+{
+	"@programName": "ZAP",
+	"@version": "2.17.0",
+	"@generated": "Mon, 16 Nov 2026 00:20:07",
+	"created": "2026-11-16T00:20:07.285812620Z",
+	"insights":[
+		{
+			"level": "Medium",
+			"reason": "Exceeded High",
+			"site": "http://api-gateway:8080",
+			"key": "insight.code.4xx",
+			"description": "Percentage of responses with status code 4xx",
+			"statistic": "99"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://api-gateway:8080",
+			"key": "insight.endpoint.ctype.application/json",
+			"description": "Percentage of endpoints with content type application/json",
+			"statistic": "98"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://api-gateway:8080",
+			"key": "insight.endpoint.ctype.text/plain",
+			"description": "Percentage of endpoints with content type text/plain",
+			"statistic": "1"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://api-gateway:8080",
+			"key": "insight.endpoint.method.GET",
+			"description": "Percentage of endpoints with method GET",
+			"statistic": "70"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://api-gateway:8080",
+			"key": "insight.endpoint.method.PATCH",
+			"description": "Percentage of endpoints with method PATCH",
+			"statistic": "15"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://api-gateway:8080",
+			"key": "insight.endpoint.method.POST",
+			"description": "Percentage of endpoints with method POST",
+			"statistic": "14"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://api-gateway:8080",
+			"key": "insight.endpoint.total",
+			"description": "Count of total endpoints",
+			"statistic": "57"
+		}
+	],
+	"site":[ 
+		{
+			"@name": "http://api-gateway:8080",
+			"@host": "api-gateway",
+			"@port": "8080",
+			"@ssl": "false",
+			"alerts": [ 
+				{
+					"pluginid": "90004",
+					"alertRef": "90004-1",
+					"alert": "Cross-Origin-Resource-Policy Header Missing or Invalid",
+					"name": "Cross-Origin-Resource-Policy Header Missing or Invalid",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>Cross-Origin-Resource-Policy header is an opt-in header designed to counter side-channels attacks like Spectre. Resource should be specifically set as shareable amongst different origins.</p>",
+					"instances":[ 
+						{
+							"id": "435",
+							"uri": "http://api-gateway:8080/api/citas/health",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/health",
+							"method": "GET",
+							"param": "Cross-Origin-Resource-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "363",
+							"uri": "http://api-gateway:8080/api/propietarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/propietarios",
+							"method": "GET",
+							"param": "Cross-Origin-Resource-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "441",
+							"uri": "http://api-gateway:8080/api/razas",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/razas",
+							"method": "GET",
+							"param": "Cross-Origin-Resource-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "453",
+							"uri": "http://api-gateway:8080/api/veterinarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios",
+							"method": "GET",
+							"param": "Cross-Origin-Resource-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						},
+						{
+							"id": "440",
+							"uri": "http://api-gateway:8080/api/veterinarios/10/horarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/10\/horarios",
+							"method": "GET",
+							"param": "Cross-Origin-Resource-Policy",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that the application/web server sets the Cross-Origin-Resource-Policy header appropriately, and that it sets the Cross-Origin-Resource-Policy header to 'same-origin' for all web pages.</p><p>'same-site' is considered as less secured and should be avoided.</p><p>If resources must be shared, set the header to 'cross-origin'.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that supports the Cross-Origin-Resource-Policy header (https://caniuse.com/mdn-http_headers_cross-origin-resource-policy).</p>",
+					"otherinfo": "",
+					"reference": "<p>https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Cross-Origin-Embedder-Policy</p>",
+					"cweid": "693",
+					"wascid": "14",
+					"sourceid": "27"
+				},
+				{
+					"pluginid": "10021",
+					"alertRef": "10021",
+					"alert": "X-Content-Type-Options Header Missing",
+					"name": "X-Content-Type-Options Header Missing",
+					"riskcode": "1",
+					"confidence": "2",
+					"riskdesc": "Low (Medium)",
+					"desc": "<p>The Anti-MIME-Sniffing header X-Content-Type-Options was not set to 'nosniff'. This allows older versions of Internet Explorer and Chrome to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), rather than performing MIME-sniffing.</p>",
+					"instances":[ 
+						{
+							"id": "432",
+							"uri": "http://api-gateway:8080/api/citas/health",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/health",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "359",
+							"uri": "http://api-gateway:8080/api/propietarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/propietarios",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "436",
+							"uri": "http://api-gateway:8080/api/razas",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/razas",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "450",
+							"uri": "http://api-gateway:8080/api/veterinarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						},
+						{
+							"id": "433",
+							"uri": "http://api-gateway:8080/api/veterinarios/10/horarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/10\/horarios",
+							"method": "GET",
+							"param": "x-content-type-options",
+							"attack": "",
+							"evidence": "",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses."
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>Ensure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to 'nosniff' for all web pages.</p><p>If possible, ensure that the end user uses a standards-compliant and modern web browser that does not perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.</p>",
+					"otherinfo": "<p>This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.</p><p>At \"High\" threshold this scan rule will not alert on client or server error responses.</p>",
+					"reference": "<p>https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/gg622941(v=vs.85)</p><p>https://owasp.org/www-community/Security_Headers</p>",
+					"cweid": "693",
+					"wascid": "15",
+					"sourceid": "27"
+				},
+				{
+					"pluginid": "100000",
+					"alertRef": "100000-1",
+					"alert": "A Client Error response code was returned by the server",
+					"name": "A Client Error response code was returned by the server",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>A response code of 404 was returned by the server.</p><p>This may indicate that the application is failing to handle unexpected input correctly.</p><p>Raised by the 'Alert on HTTP Response Code Error' script</p>",
+					"instances":[ 
+						{
+							"id": "17",
+							"uri": "http://api-gateway:8080",
+							"nodeName": "http:\/\/api-gateway:8080",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4766",
+							"uri": "http://api-gateway:8080/",
+							"nodeName": "http:\/\/api-gateway:8080\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "9",
+							"uri": "http://api-gateway:8080/616991593641524996",
+							"nodeName": "http:\/\/api-gateway:8080\/616991593641524996",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "18",
+							"uri": "http://api-gateway:8080/api",
+							"nodeName": "http:\/\/api-gateway:8080\/api",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4767",
+							"uri": "http://api-gateway:8080/api/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "10",
+							"uri": "http://api-gateway:8080/api/33670367095731234",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/33670367095731234",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4768",
+							"uri": "http://api-gateway:8080/api/citas/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "8",
+							"uri": "http://api-gateway:8080/api/citas/10",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4771",
+							"uri": "http://api-gateway:8080/api/citas/10/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "12",
+							"uri": "http://api-gateway:8080/api/citas/10/1882815390372172460",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/10\/1882815390372172460",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "5343",
+							"uri": "http://api-gateway:8080/api/citas/10/actuator/health",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/10\/actuator\/health",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4769",
+							"uri": "http://api-gateway:8080/api/citas/10/historial/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/10\/historial\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "11",
+							"uri": "http://api-gateway:8080/api/citas/3876281671182736361",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/3876281671182736361",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "400",
+							"otherinfo": ""
+						},
+						{
+							"id": "4770",
+							"uri": "http://api-gateway:8080/api/citas/health/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/health\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4773",
+							"uri": "http://api-gateway:8080/api/especies/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/especies\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4772",
+							"uri": "http://api-gateway:8080/api/estados-cita/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/estados-cita\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4775",
+							"uri": "http://api-gateway:8080/api/mascotas/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/mascotas\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "7",
+							"uri": "http://api-gateway:8080/api/mascotas/10",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/mascotas\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4777",
+							"uri": "http://api-gateway:8080/api/mascotas/10/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/mascotas\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "13",
+							"uri": "http://api-gateway:8080/api/mascotas/3190213703844662162",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/mascotas\/3190213703844662162",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "400",
+							"otherinfo": ""
+						},
+						{
+							"id": "4778",
+							"uri": "http://api-gateway:8080/api/propietarios/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/propietarios\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "6",
+							"uri": "http://api-gateway:8080/api/propietarios/10",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/propietarios\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4776",
+							"uri": "http://api-gateway:8080/api/propietarios/10/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/propietarios\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "14",
+							"uri": "http://api-gateway:8080/api/propietarios/4070519459584199890",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/propietarios\/4070519459584199890",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "400",
+							"otherinfo": ""
+						},
+						{
+							"id": "4774",
+							"uri": "http://api-gateway:8080/api/razas/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/razas\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4779",
+							"uri": "http://api-gateway:8080/api/veterinarios/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "5",
+							"uri": "http://api-gateway:8080/api/veterinarios/10",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4780",
+							"uri": "http://api-gateway:8080/api/veterinarios/10/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/10\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "16",
+							"uri": "http://api-gateway:8080/api/veterinarios/10/1270826211143654138",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/10\/1270826211143654138",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4781",
+							"uri": "http://api-gateway:8080/api/veterinarios/10/horarios/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/10\/horarios\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "15",
+							"uri": "http://api-gateway:8080/api/veterinarios/5670210391155118988",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/5670210391155118988",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "400",
+							"otherinfo": ""
+						},
+						{
+							"id": "4",
+							"uri": "http://api-gateway:8080/api/citas/10/estado",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/10\/estado ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "400",
+							"otherinfo": ""
+						},
+						{
+							"id": "23",
+							"uri": "http://api-gateway:8080/api/citas/10/estado",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/10\/estado ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4764",
+							"uri": "http://api-gateway:8080/api/citas/10/estado/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/10\/estado\/ ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3555",
+							"uri": "http://api-gateway:8080/computeMetadata/v1/",
+							"nodeName": "http:\/\/api-gateway:8080\/computeMetadata\/v1\/ ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3546",
+							"uri": "http://api-gateway:8080/latest/meta-data/",
+							"nodeName": "http:\/\/api-gateway:8080\/latest\/meta-data\/ ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3609",
+							"uri": "http://api-gateway:8080/metadata/instance",
+							"nodeName": "http:\/\/api-gateway:8080\/metadata\/instance ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3615",
+							"uri": "http://api-gateway:8080/metadata/v1",
+							"nodeName": "http:\/\/api-gateway:8080\/metadata\/v1 ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3571",
+							"uri": "http://api-gateway:8080/opc/v1/instance/",
+							"nodeName": "http:\/\/api-gateway:8080\/opc\/v1\/instance\/ ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3583",
+							"uri": "http://api-gateway:8080/opc/v2/instance/",
+							"nodeName": "http:\/\/api-gateway:8080\/opc\/v2\/instance\/ ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3621",
+							"uri": "http://api-gateway:8080/openstack/latest/meta_data.json",
+							"nodeName": "http:\/\/api-gateway:8080\/openstack\/latest\/meta_data.json ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3",
+							"uri": "http://api-gateway:8080/api/citas",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas ()({mascotaId,propietarioId,veterinarioId,fechaCita,horaInicio,horaFin,motivo})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "400",
+							"otherinfo": ""
+						},
+						{
+							"id": "4760",
+							"uri": "http://api-gateway:8080/api/citas/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/ ()({mascotaId,propietarioId,veterinarioId,fechaCita,horaInicio,horaFin,motivo})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "2",
+							"uri": "http://api-gateway:8080/api/mascotas",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/mascotas ()({id,propietario:{id,usuarioId,nombres,apellidos,tipoDocumento,numeroDocumento,telefono,correo,direccion,fechaRegistro},especie:{id,nombre},raza:{id,especie:{id,nombre},nombre},nombre,sexo,fechaNacimiento,fechaRegistro,activo})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "400",
+							"otherinfo": ""
+						},
+						{
+							"id": "4763",
+							"uri": "http://api-gateway:8080/api/mascotas/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/mascotas\/ ()({id,propietario:{id,usuarioId,nombres,apellidos,tipoDocumento,numeroDocumento,telefono,correo,direccion,fechaRegistro},especie:{id,nombre},raza:{id,especie:{id,nombre},nombre},nombre,sexo,fechaNacimiento,fechaRegistro,activo})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1",
+							"uri": "http://api-gateway:8080/api/propietarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/propietarios ()({id,usuarioId,nombres,apellidos,tipoDocumento,numeroDocumento,telefono,correo,direccion,fechaRegistro})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "400",
+							"otherinfo": ""
+						},
+						{
+							"id": "4762",
+							"uri": "http://api-gateway:8080/api/propietarios/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/propietarios\/ ()({id,usuarioId,nombres,apellidos,tipoDocumento,numeroDocumento,telefono,correo,direccion,fechaRegistro})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "0",
+							"uri": "http://api-gateway:8080/api/veterinarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios ()({id,usuarioId,nombres,apellidos,colegiatura,especialidad,activo})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "400",
+							"otherinfo": ""
+						},
+						{
+							"id": "4761",
+							"uri": "http://api-gateway:8080/api/veterinarios/",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/ ()({id,usuarioId,nombres,apellidos,colegiatura,especialidad,activo})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						}
+					],
+					"count": "49",
+					"systemic": false,
+					"solution": "",
+					"otherinfo": "",
+					"reference": "",
+					"cweid": "388",
+					"wascid": "20",
+					"sourceid": "44"
+				},
+				{
+					"pluginid": "10049",
+					"alertRef": "10049-1",
+					"alert": "Non-Storable Content",
+					"name": "Non-Storable Content",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The response contents are not storable by caching components such as proxy servers. If the response does not contain sensitive, personal or user-specific information, it may benefit from being stored and cached, to improve performance.</p>",
+					"instances":[ 
+						{
+							"id": "434",
+							"uri": "http://api-gateway:8080/api/citas/health",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/health",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "authorization:",
+							"otherinfo": ""
+						},
+						{
+							"id": "362",
+							"uri": "http://api-gateway:8080/api/propietarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/propietarios",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "authorization:",
+							"otherinfo": ""
+						},
+						{
+							"id": "439",
+							"uri": "http://api-gateway:8080/api/razas",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/razas",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "authorization:",
+							"otherinfo": ""
+						},
+						{
+							"id": "438",
+							"uri": "http://api-gateway:8080/api/veterinarios/10/horarios",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/veterinarios\/10\/horarios",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "authorization:",
+							"otherinfo": ""
+						},
+						{
+							"id": "442",
+							"uri": "http://api-gateway:8080/api/citas/10/estado",
+							"nodeName": "http:\/\/api-gateway:8080\/api\/citas\/10\/estado ()({estado,observacion})",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "PATCH ",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>The content may be marked as storable by ensuring that the following conditions are satisfied:</p><p>The request method must be understood by the cache and defined as being cacheable (\"GET\", \"HEAD\", and \"POST\" are currently defined as cacheable)</p><p>The response status code must be understood by the cache (one of the 1XX, 2XX, 3XX, 4XX, or 5XX response classes are generally understood)</p><p>The \"no-store\" cache directive must not appear in the request or response header fields</p><p>For caching by \"shared\" caches such as \"proxy\" caches, the \"private\" response directive must not appear in the response</p><p>For caching by \"shared\" caches such as \"proxy\" caches, the \"Authorization\" header field must not appear in the request, unless the response explicitly allows it (using one of the \"must-revalidate\", \"public\", or \"s-maxage\" Cache-Control response directives)</p><p>In addition to the conditions above, at least one of the following conditions must also be satisfied by the response:</p><p>It must contain an \"Expires\" header field</p><p>It must contain a \"max-age\" response directive</p><p>For \"shared\" caches such as \"proxy\" caches, it must contain a \"s-maxage\" response directive</p><p>It must contain a \"Cache Control Extension\" that allows it to be cached</p><p>It must have a status code that is defined as cacheable by default (200, 203, 204, 206, 300, 301, 404, 405, 410, 414, 501).</p>",
+					"otherinfo": "",
+					"reference": "<p>https://datatracker.ietf.org/doc/html/rfc7234</p><p>https://datatracker.ietf.org/doc/html/rfc7231</p><p>https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html</p>",
+					"cweid": "524",
+					"wascid": "13",
+					"sourceid": "27"
+				}
+			]
+		}
+	],
+	"sequences":[
+	]
+
+}
